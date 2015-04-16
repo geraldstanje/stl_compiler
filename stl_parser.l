@@ -46,8 +46,8 @@ real            {integer}|{integer}("."{number})?|{exponant}?
 "until"                         return TKU_WEAK;
 "until!"                        return TKU_STRONG;
 
-"once"							            return TKONCE;
-"historically"					        return TKHIST;
+"once"                          return TKONCE;
+"historically"                  return TKHIST;
 "since"                         return TKS;
 "backto"                        return TKB;
 
@@ -62,11 +62,11 @@ real            {integer}|{integer}("."{number})?|{exponant}?
 
 "freeze"                        return TKFREEZE;
 
-"modfil"						            return TKMODFIL;
-"modmask"						            return TKMODMASK;
+"modfil"                        return TKMODFIL;
+"modmask"                       return TKMODMASK;
 
-"next_rise"					            {BEGIN next_occurence; return TKNEXTOCC_W;}
-"next_rise!"					          {BEGIN next_occurence; return TKNEXTOCC_S;}
+"next_rise"                     {BEGIN next_occurence; return TKNEXTOCC_W;}
+"next_rise!"                    {BEGIN next_occurence; return TKNEXTOCC_S;}
 
 
 ">="                            return TKGEQ;
@@ -102,9 +102,9 @@ real            {integer}|{integer}("."{number})?|{exponant}?
                                   yylval.integer = atof (yytext);
                                   return TKINTEGER;
                                 }
-<next_occurence>[ \n\t\[]		    ;
-<next_occurence>"]"				      {	BEGIN 0; }
-<next_occurence>.				        { yyerror ("Invalid character"); }
+<next_occurence>[ \n\t\[]       ;
+<next_occurence>"]"             { BEGIN 0; }
+<next_occurence>.               { yyerror ("Invalid character"); }
 [ \n\t\s\r]*                    /* ignore whitespace */;
 [:;(){}\[\],]                   { return *yytext; }
 .                               { yyerror ("Invalid character"); }
