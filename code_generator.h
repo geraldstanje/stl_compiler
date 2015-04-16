@@ -5,21 +5,21 @@
 #include <iostream>
 
 class CodeGenerator {
-public:
+  public:
     CodeGenerator() {}
     ~CodeGenerator() {}
-	
-	void execute(BooleanExpression *nd) {
-		if (!nd) {
-			return;
-		}
-		
-		for (auto e = nd->children.begin(); e != nd->children.end(); e++) {
-			execute(*e);
-		}
-		
-		std::cout << nd->name() << '\n';
-	}
+
+    void execute(BooleanExpression *nd) {
+        if (!nd) {
+            return;
+        }
+
+        for (auto e = nd->children.begin(); e != nd->children.end(); e++) {
+            execute(*e);
+        }
+
+        std::cout << nd->name() << '\n';
+    }
 };
 
 #endif
