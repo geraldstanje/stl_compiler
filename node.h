@@ -6,117 +6,87 @@
 #include <string>
 #include <sstream>
 
-static int count = 0;
+class Bound {
+public:
+	double min;
+	double max;
+	Bound(double min_, double max_): min(min_), max(max_) {}
+};
 
 class BooleanExpression {
-  public:
-    int nodeId;
-    std::vector<BooleanExpression*> children;
-    BooleanExpression(BooleanExpression *l, BooleanExpression *r): nodeId(count++) {
-        if (l) {
-            children.push_back(l);
-        }
-        if (r) {
-            children.push_back(r);
-        }
-    }
-    virtual ~BooleanExpression() {}
-    virtual std::string name() = 0;
-    //virtual llvm::Value* codeGen(CodeGenContext& context) { return NULL; }
+public:
+	int nodeId;
+	std::vector<BooleanExpression*> children;
+	BooleanExpression(BooleanExpression *l, BooleanExpression *r);
+	virtual ~BooleanExpression();
+	std::string id();
+	std::string childParams();
+	virtual std::string name() = 0;
+	virtual std::string codeGen() = 0;
 };
 
 class NAlways : public BooleanExpression {
-  public:
-    int min_time;
-    int max_time;
-    NAlways(BooleanExpression *l_, BooleanExpression *r_): BooleanExpression(l_, r_) {}
-    std::string name() {
-        return "NAlways";
-    }
-    //virtual llvm::Value* codeGen(CodeGenContext& context);
+public:
+	Bound *b;
+	NAlways(BooleanExpression *l_, BooleanExpression *r_, Bound *b_);
+	virtual std::string name();
+	virtual std::string codeGen();
 };
 
 class NAnd : public BooleanExpression {
-  public:
-    NAnd(BooleanExpression *l_, BooleanExpression *r_): BooleanExpression(l_, r_) {}
-    std::string name() {
-        return "NAnd";
-    }
-    //virtual llvm::Value* codeGen(CodeGenContext& context);
+public:
+	NAnd(BooleanExpression *l_, BooleanExpression *r_);
+	virtual std::string name();
+	virtual std::string codeGen();
 };
 
 class NEventually : public BooleanExpression {
-  public:
-    int min_time;
-    int max_time;
-    NEventually(BooleanExpression *l_, BooleanExpression *r_): BooleanExpression(l_, r_) {}
-    std::string name() {
-        return "NEventually";
-    }
-    //virtual llvm::Value* codeGen(CodeGenContext& context);
+public:
+	Bound *b;
+	NEventually(BooleanExpression *l_, BooleanExpression *r_, Bound *b_);
+	virtual std::string name();
+	virtual std::string codeGen();
 };
 
 class NPredicate : public BooleanExpression {
-  public:
-    std::string variable;
-    std::string op;
-    float condition;
-    NPredicate(BooleanExpression *l_, BooleanExpression *r_, const char *variable_): BooleanExpression(l_, r_), variable(variable_) {}
-    std::string name() {
-        return std::string("NPredicate") +  std::string(" ") + variable;
-    }
-    //virtual llvm::Value* codeGen(CodeGenContext& context);
+public:
+	std::string variable;
+	std::string op;
+	float condition;
+	NPredicate(BooleanExpression *l_, BooleanExpression *r_, const char *variable_);
+	virtual std::string name();
+	virtual std::string codeGen();
 };
 
 class NImply : public BooleanExpression {
-  public:
-    int min_time;
-    int max_time;
-    NImply(BooleanExpression *l_, BooleanExpression *r_): BooleanExpression(l_, r_) {}
-    std::string name() {
-        return "NImply";
-    }
-    //virtual llvm::Value* codeGen(CodeGenContext& context);
+public:
+	int min_time;
+	int max_time;
+	NImply(BooleanExpression *l_, BooleanExpression *r_);
+	virtual std::string name();
+	virtual std::string codeGen();
 };
 
-class AST {
-  public:
-    BooleanExpression *root;
-    AST() {}
-    std::string intToString(int num) {
-        std::stringstream ss;
-        ss << num;
-        return ss.str();
-    }
-    void setAST(BooleanExpression *root_) {
-        root = root_;
-    }
-    void print(BooleanExpression *nd, std::ostream &os) {
-        if (!nd) {
-            return;
-        }
+class NAnalog : public BooleanExpression {
+public:
+	std::string variable;
+	NAnalog(BooleanExpression *l_, BooleanExpression *r_, const char *variable_);
+	virtual std::string name();
+	virtual std::string codeGen();
+};
 
-        for (auto e = nd->children.begin(); e != nd->children.end(); e++) {
-            os << "\t" + intToString(nd->nodeId) + " -> " + intToString((*e)->nodeId) + "\n";
+class NBoolAtom : public BooleanExpression {
+public:
+	std::string variable;
+	NBoolAtom(BooleanExpression *l_, BooleanExpression *r_, const char *variable_);
+	virtual std::string name();
+	virtual std::string codeGen();
+};
 
-            print(*e, os);
-        }
-
-        os << "\t" + intToString(nd->nodeId) + " [label=\"" + nd->name() + "\"];" + "\n";
-    }
-    bool generateDotFormat(const std::string outputfile) {
-        std::ofstream file;
-        file.open(outputfile.c_str(), std::ios::out);
-        if (!file.is_open()) {
-            return false;
-        }
-
-        file << "digraph G {" << "\n";
-        print(root, file);
-        file << "}";
-        file.close();
-        return true;
-    }
+class AnalogExpression {
+public:
+	std::string name;
+	AnalogExpression(const char *name_);
 };
 
 #endif

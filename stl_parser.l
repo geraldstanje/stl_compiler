@@ -3,7 +3,7 @@
 #include "y.tab.hpp"
 #include <cstdlib>
 
-extern void yyerror(const char *message);
+extern void yyerror(const char* message);
 %}
 
 /* Add this to get line numbers... */
@@ -46,8 +46,8 @@ real            {integer}|{integer}("."{number})?|{exponant}?
 "until"                         return TKU_WEAK;
 "until!"                        return TKU_STRONG;
 
-"once"                          return TKONCE;
-"historically"                  return TKHIST;
+"once"							return TKONCE;
+"historically"					return TKHIST;
 "since"                         return TKS;
 "backto"                        return TKB;
 
@@ -62,12 +62,12 @@ real            {integer}|{integer}("."{number})?|{exponant}?
 
 "freeze"                        return TKFREEZE;
 
-"modfil"                        return TKMODFIL;
-"modmask"                       return TKMODMASK;
+"modfil"						return TKMODFIL;
+"modmask"						return TKMODMASK;
 
-"next_rise"                     {BEGIN next_occurence; return TKNEXTOCC_W;}
-"next_rise!"                    {BEGIN next_occurence; return TKNEXTOCC_S;}
-
+"next_rise"					    {BEGIN next_occurence; return TKNEXTOCC_W;}
+"next_rise!"					{BEGIN next_occurence; return TKNEXTOCC_S;}
+                                
 
 ">="                            return TKGEQ;
 ">"                             return TKGREATER;
@@ -79,38 +79,41 @@ real            {integer}|{integer}("."{number})?|{exponant}?
 "a:"                            { BEGIN analog; }
 "b:"                            { BEGIN boolean; }
 <analog>{id}                    {
-                                  yylval.str = strdup (yytext);
-                                  BEGIN 0;
-                                  return TKAIDENTIFIER;
+                                    yylval.str = strdup (yytext);
+									BEGIN 0;
+                                    return TKAIDENTIFIER;
                                 }
 <analog>[ \t\n]*                ;
+
 <boolean>{id}                   {
-                                  yylval.str = strdup (yytext);
-                                  BEGIN 0;
-                                  return TKBIDENTIFIER;
+									yylval.str = strdup (yytext);
+                                    BEGIN 0;
+                                    return TKBIDENTIFIER;
                                 }
 <boolean>[ \t\n]*               ;
 {id}                            {
-                                  yylval.str = strdup (yytext);
-                                  return TKIDENTIFIER;
+									yylval.str = strdup (yytext);
+                                    return TKIDENTIFIER;
                                 }
-{real}                          {
-                                  yylval.dbl = atof (yytext);
-                                  return TKREAL;
+{real}                          {								
+									yylval.dbl = atof (yytext);
+                                    return TKREAL;
                                 }
 <next_occurence>{number}        {
-                                  yylval.integer = atof (yytext);
-                                  return TKINTEGER;
+									yylval.integer = atof (yytext);
+                                    return TKINTEGER;
                                 }
-<next_occurence>[ \n\t\[]       ;
-<next_occurence>"]"             { BEGIN 0; }
-<next_occurence>.               { yyerror ("Invalid character"); }
-[ \n\t\s\r]*                    /* ignore whitespace */;
+<next_occurence>[ \n\t\[]		;
+<next_occurence>"]"				{	BEGIN 0; }
+<next_occurence>.				yyerror ("Invalid character");
+[ \n\t\s\r]*                        ;
 [:;(){}\[\],]                   { return *yytext; }
+
 .                               { yyerror ("Invalid character"); }
 
 %%
 
-int yywrap (void) {
+int yywrap (void)
+{
     return 1;
 }

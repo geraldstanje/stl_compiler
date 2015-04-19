@@ -8,8 +8,8 @@ YACCFLAGS = -dv
 #LECFLAGS = -l
 #LIBDIR = "C:\Program Files\GnuWin32\lib"
 #LIBS = -lfl -ly
-SRC = node.cpp code_generator.cpp y.tab.cpp lex.yy.cpp main.cpp
-OBJ = node.o code_generator.o y.tab.o lex.yy.o main.o
+SRC = node.cpp ast.cpp code_generator.cpp y.tab.cpp lex.yy.cpp main.cpp
+OBJ = node.o ast.o code_generator.o y.tab.o lex.yy.o main.o
 TARGET = main
 
 all: $(TARGET) $(OBJ)
