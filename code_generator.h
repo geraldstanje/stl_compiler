@@ -2,11 +2,15 @@
 #define CODEGEN_H
 
 #include "node.h"
+#include "ast.h"
 
 class CodeGenerator {
-public:
+  public:
+    AST *ast;
+
     CodeGenerator();
-	void execute(BooleanExpression *nd);
+    void execute(AST *ast_);
+    void execute(Node *nd);
 };
 
 #endif

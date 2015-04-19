@@ -6,16 +6,17 @@
 #include <string>
 
 class AST {
-public:
-	std::unordered_map<std::string, BooleanExpression*> defineDecl;
-	
-public:
-	BooleanExpression *root;
-	AST();
-	void setAST(BooleanExpression *root_);
-	void addDefine(const char *name, BooleanExpression *b);
-	void print(BooleanExpression *nd, std::ostream &os);	
-	bool generateDotFormat(const std::string outputfile);
+  public:
+    std::unordered_map<std::string, Node*> defineDecl;
+
+  public:
+    Node *root;
+    AST();
+    void setAST(Node *root_);
+    void addDefine(const char *name, Node *b);
+    Node* getNode(const std::string name);
+    void print(Node *nd, std::ostream &os);
+    bool generateDotFormat(const std::string outputfile);
 };
 
 #endif

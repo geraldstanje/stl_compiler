@@ -150,7 +150,7 @@ boolean_expression:
     | analog_expression TKLESS TKREAL { $$ = new NPredicate(NULL, NULL, "Gg"); printf("create boolean_expression2 TKLESS: %f\n", $3); }
     | analog_expression TKGREATER TKREAL { printf("create boolean_expression3 TKGREATER: %f\n", $3); }
     | analog_expression TKGEQ TKREAL { printf("create boolean_expression4 TKGEQ: %f\n", $3); }
-    | analog_expression TKEQ TKREAL { $$ = new NPredicate(NULL, NULL, "Gg"); printf("create boolean_expression5 TKEQ: %f\n", $3); }
+    | analog_expression TKEQ TKREAL { $$ = new NPredicate((BooleanExpression*)$1, NULL, "Gg"); printf("create boolean_expression5 TKEQ: %f\n", $3); }
     | TKDISTANCE '(' analog_expression ',' analog_expression ',' TKREAL ')' { printf("create boolean_expression6\n"); }
     | TKDISTANCE '(' analog_expression ',' analog_expression ',' TKREAL ',' { printf("create boolean_expression7\n"); }
       TKREAL ',' TKREAL ')' { printf("create boolean_expression8\n"); }
@@ -162,7 +162,7 @@ analog_expression:
     analog_atom { $$ = $1; printf("create analog_expression1: %s %s\n", $$, $1); }
     | '(' analog_expression ')' { $$ = $2; printf("create analog_expression2: %s %s\n", $$, $2); }
     | TKSHIFT '(' analog_expression ',' TKREAL ')' { printf("create analog_expression3\n"); }
-    | TKABS '(' analog_expression ')' { /*$$ = new NAnalog(NULL, NULL, "x");*/ printf("create analog_expression4: abs\n"); }
+    | TKABS '(' analog_expression ')' { $$ = new NAnalog($3, NULL, "x"); printf("create analog_expression4: abs\n"); }
     | analog_expression TKMINUS analog_expression { printf("create analog_expression5\n"); }
     | analog_expression TKPLUS analog_expression { printf("create analog_expression6\n"); }
     | analog_expression TKTIMES analog_expression { printf("create analog_expression7\n"); }
