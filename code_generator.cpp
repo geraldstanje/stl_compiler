@@ -30,16 +30,19 @@ void CodeGenerator::execute(Node *nd) {
         execute(*e);
     }
 
-    if (nd->isBoolAtom()) {
-        Node *n = ast->getNode("x_smaller6");
-        if (n) {
-            std::cout << "found" << '\n';
-            n->codeGen();
-            std::cout << "name: " << n->name() << '\n';
-        } else {
-            std::cout << "not found" << '\n';
+    if (nd->isBoolAtom()) {	 
+        Node *n = ast->getNode(nd->name());
+		nd->nodeId = n->nodeId;
+		
+		for (auto e = n->children.begin(); e != n->children.end(); e++) {
+			execute(*e);
+		}
+		
+		if (n) {
+            std::cout << n->codeGen() << '\n';
         }
-    }
-
-    std::cout << nd->codeGen() << '\n';
+	}
+	else {
+		std::cout << nd->codeGen() << '\n';
+	}
 }

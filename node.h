@@ -29,17 +29,11 @@ class Node {
 class BooleanExpression : public Node {
   public:
     BooleanExpression(BooleanExpression *l, BooleanExpression *r);
-    virtual bool isBoolAtom() = 0;
-    virtual std::string name() = 0;
-    virtual std::string codeGen() = 0;
 };
 
 class AnalogExpression : public Node {
   public:
     AnalogExpression(AnalogExpression *l, AnalogExpression *r);
-    virtual bool isBoolAtom() = 0;
-    virtual std::string name() = 0;
-    virtual std::string codeGen() = 0;
 };
 
 class NAlways : public BooleanExpression {
@@ -70,10 +64,10 @@ class NEventually : public BooleanExpression {
 
 class NPredicate : public BooleanExpression {
   public:
-    std::string variable;
+	std::string variable;
     std::string op;
-    float condition;
-    NPredicate(BooleanExpression *l_, BooleanExpression *r_, const char *variable_);
+    double condition;
+    NPredicate(BooleanExpression *l_, BooleanExpression *r_, const std::string op_, double condition_);
     virtual bool isBoolAtom();
     virtual std::string name();
     virtual std::string codeGen();
@@ -89,14 +83,6 @@ class NImply : public BooleanExpression {
     virtual std::string codeGen();
 };
 
-/*class NAnalog : public BooleanExpression {
-public:
-	std::string variable;
-	NAnalog(BooleanExpression *l_, BooleanExpression *r_, const char *variable_);
-	virtual std::string name();
-	virtual std::string codeGen();
-};*/
-
 class NBoolAtom : public BooleanExpression {
   public:
     std::string variable;
@@ -106,13 +92,23 @@ class NBoolAtom : public BooleanExpression {
     virtual std::string codeGen();
 };
 
+class NEvent : public BooleanExpression {
+  public:
+    NEvent(BooleanExpression *l_, BooleanExpression *r_);
+    virtual bool isBoolAtom();
+    virtual std::string name();
+    virtual std::string codeGen();
+};
+
 class NAnalog : public AnalogExpression {
   public:
-    std::string name_;
+	std::string op;
+    std::string variable;
     NAnalog(AnalogExpression *l_, AnalogExpression *r_, const char *variable_);
     virtual bool isBoolAtom();
     virtual std::string name();
     virtual std::string codeGen();
+	void setOperator(const std::string op_);
 };
 
 #endif

@@ -1,5 +1,6 @@
 #include "ast.h"
 
+#include <cstdlib>     /* exit, EXIT_FAILURE */
 #include <iostream>
 
 static std::string intToString(int num) {
@@ -15,17 +16,14 @@ void AST::setAST(Node *root_) {
 }
 
 void AST::addDefine(const char *name, Node *b) {
-    std::cout << b->nodeId << ", " << name << '\n';
-    //return;
-
     auto it = defineDecl.find(name);
+	
     if (it == defineDecl.end()) {
         defineDecl.insert(std::make_pair(name, b));
     } else {
-        std::cout << "errror....." << '\n';
+        std::cerr << "error: duplicated definition" << '\n';
+		std::exit(1);
     }
-
-    std::cout << "addDefine called....................: " << name << '\n';
 }
 
 Node* AST::getNode(const std::string name) {

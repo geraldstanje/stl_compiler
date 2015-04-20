@@ -8,6 +8,12 @@ static std::string intToString(int num) {
     return ss.str();
 }
 
+static std::string doubleToString(double num) {
+    std::stringstream ss;
+    ss << num;
+    return ss.str();
+}
+
 Node::Node(Node *l, Node *r): nodeId(count++) {
     if (l) {
         children.push_back(l);
@@ -25,9 +31,9 @@ std::string Node::id() {
 
 std::string Node::childParams() {
     if (children.size() > 1) {
-        return std::string("node") + children[0]->id() + std::string(", ") + std::string("node") + children[1]->id();
+        return std::string("n") + children[0]->id() + std::string(", ") + std::string("node") + children[1]->id();
     } else if (children.size() > 0) {
-        return std::string("node") + children[0]->id() + std::string(", ") + std::string("NULL");
+        return std::string("n") + children[0]->id() + std::string(", ") + std::string("NULL");
     }
     return std::string("NULL, NULL");
 }
@@ -97,19 +103,24 @@ std::string NEventually::codeGen() {
            std::string("(") + childParams() + std::string(", ") + std::string("eventually_t") + std::string(", ") + timeBound + std::string(");");
 }
 
-NPredicate::NPredicate(BooleanExpression *l_, BooleanExpression *r_, const char *variable_): BooleanExpression(l_, r_), variable(variable_) {}
+NPredicate::NPredicate(BooleanExpression *l_, BooleanExpression *r_, const std::string op_, double condition_): BooleanExpression(l_, r_), op(op_), condition(condition_) {
+	if (l_) {
+		variable = (reinterpret_cast<NAnalog*>(l_))->variable;
+	}
+}
 
 bool NPredicate::isBoolAtom() {
     return false;
 }
 
 std::string NPredicate::name() {
-    return std::string("NPredicate") +  std::string(" ") + std::string("=") + variable;
+    return std::string("NPredicate");
 }
 
 std::string NPredicate::codeGen() {
     return "node *n" + id() + std::string(" = ") + std::string("node_predicate_new") +
-           "(" + childParams() + std::string(", ") + variable;
+           "(" + childParams() + std::string(", ") + op + std::string(", ") + std::string("\"") + variable + std::string("\"") + std::string(", ") + 
+		   doubleToString(condition) + std::string(");");
 }
 
 NImply::NImply(BooleanExpression *l_, BooleanExpression *r_): BooleanExpression(l_, r_) {}
@@ -134,7 +145,7 @@ bool NBoolAtom::isBoolAtom() {
 }
 
 std::string NBoolAtom::name() {
-    return std::string("NBoolAtom") +  std::string(" ") + std::string("=") + variable;
+    return variable;
 }
 
 std::string NBoolAtom::codeGen() {
@@ -142,16 +153,36 @@ std::string NBoolAtom::codeGen() {
            "(" + childParams() + std::string(", ") + variable;
 }
 
-NAnalog::NAnalog(AnalogExpression *l, AnalogExpression *r, const char *variable): AnalogExpression(l, r), name_(variable) {}
+NEvent::NEvent(BooleanExpression *l_, BooleanExpression *r_): BooleanExpression(l_, r_) {}
+
+bool NEvent::isBoolAtom() {
+	return false;
+}
+	
+std::string NEvent::name() {
+    return "NEvent";
+}
+
+std::string NEvent::codeGen() {
+    return "node *n" + id() + std::string(" = ") + std::string("node_event_new") +
+           std::string("(") + childParams() + std::string(", ") + std::string("rise_t") + std::string(");");
+}
+
+NAnalog::NAnalog(AnalogExpression *l, AnalogExpression *r, const char *variable_): AnalogExpression(l, r), variable(variable_) {}
 
 bool NAnalog::isBoolAtom() {
     return false;
 }
 
 std::string NAnalog::name() {
-    return "bla";
+    return variable;
 }
 
 std::string NAnalog::codeGen() {
-    return "blo";
+    return "node *n" + id() + std::string(" = ") + std::string("node_analog_operator_new") +
+           std::string("(") + childParams() + std::string(", ") + op + std::string(", ") + std::string("\"") + variable + std::string("\"") + std::string(");");
+}
+
+void NAnalog::setOperator(const std::string op_) {
+	op = op_;
 }
