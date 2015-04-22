@@ -1,7 +1,7 @@
 #include "code_generator.h"
 #include <iostream>
 
-CodeGenerator::CodeGenerator() {}
+CodeGenerator::CodeGenerator(AST *ast_): ast(ast_) {}
 
 /*
 node *n1 = node_analog_operator_new(NULL, NULL, abs_t, "x");
@@ -16,33 +16,7 @@ node *n9 = node_boolean_operator_new(n8, n6, and_t);
 t->root = node_temp_operator_new(n9, NULL, always_t, 0, INT_MAX);
 */
 
-void CodeGenerator::execute(AST *ast_) {
-    ast = ast_;
-    execute(ast->root);
-}
-
-void CodeGenerator::execute(Node *nd) {
-    if (!nd) {
-        return;
-    }
-
-    for (auto e = nd->children.begin(); e != nd->children.end(); e++) {
-        execute(*e);
-    }
-
-    if (nd->isBoolAtom()) {	 
-        Node *n = ast->getNode(nd->name());
-		nd->nodeId = n->nodeId;
-		
-		for (auto e = n->children.begin(); e != n->children.end(); e++) {
-			execute(*e);
-		}
-		
-		if (n) {
-            std::cout << n->codeGen() << '\n';
-        }
-	}
-	else {
-		std::cout << nd->codeGen() << '\n';
-	}
+void CodeGenerator::generateCode(std::ostream *os_) {
+    os = os_;
+    ast->root->codeGen(*this);
 }

@@ -4,13 +4,16 @@
 #include "node.h"
 #include "ast.h"
 
+class Node;
+class AST;
+
 class CodeGenerator {
   public:
+    std::ostream *os;
     AST *ast;
 
-    CodeGenerator();
-    void execute(AST *ast_);
-    void execute(Node *nd);
+    CodeGenerator(AST *ast_);
+    void generateCode(std::ostream *os_);
 };
 
 #endif

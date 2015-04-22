@@ -1,6 +1,8 @@
 #include "ast.h"
 #include "code_generator.h"
 #include "y.tab.hpp"
+#include <iostream>
+#include <fstream>
 
 extern "C" {
     int yyparse();
@@ -16,8 +18,13 @@ int main() {
 
     ast.generateDotFormat("plot.dot");
 
-    CodeGenerator generator;
-    generator.execute(&ast);
+    //std::fstream file;
+    //file.open("generated.txt", std::ios::out);
+
+    CodeGenerator generator(&ast);
+    generator.generateCode(&std::cout);
+
+    //file.close();
 
     return 0;
 }

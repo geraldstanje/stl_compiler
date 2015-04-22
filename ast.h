@@ -5,6 +5,8 @@
 #include <unordered_map>
 #include <string>
 
+class Node;
+
 class AST {
   public:
     std::unordered_map<std::string, Node*> defineDecl;

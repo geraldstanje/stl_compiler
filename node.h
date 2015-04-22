@@ -5,6 +5,10 @@
 #include <fstream>
 #include <string>
 #include <sstream>
+#include "code_generator.h"
+#include "AST.h"
+
+class CodeGenerator;
 
 class Bound {
   public:
@@ -16,99 +20,107 @@ class Bound {
 class Node {
   public:
     int nodeId;
-    std::vector<Node*> children;
-    Node(Node *l, Node *r);
+    std::string name;
+    Node(const std::string name_);
     virtual ~Node();
     std::string id();
-    std::string childParams();
-    virtual bool isBoolAtom() = 0;
-    virtual std::string name() = 0;
-    virtual std::string codeGen() = 0;
+    bool isBoolAtomChild();
+    std::string getChildParams(CodeGenerator &c, Node *lhs, Node *rhs);
+    virtual void print(std::ostream &os, AST *ast) = 0;
+    virtual void codeGen(CodeGenerator &c) = 0;
 };
 
 class BooleanExpression : public Node {
   public:
-    BooleanExpression(BooleanExpression *l, BooleanExpression *r);
+    BooleanExpression(const std::string name);
+    virtual void print(std::ostream &os, AST *ast) = 0;
+    virtual void codeGen(CodeGenerator &c) = 0;
 };
 
 class AnalogExpression : public Node {
   public:
-    AnalogExpression(AnalogExpression *l, AnalogExpression *r);
+    AnalogExpression(const std::string name);
+    virtual void print(std::ostream &os, AST *ast) = 0;
+    virtual void codeGen(CodeGenerator &c) = 0;
 };
 
 class NAlways : public BooleanExpression {
   public:
+    BooleanExpression *lhs;
+    BooleanExpression *rhs;
     Bound *b;
-    NAlways(BooleanExpression *l_, BooleanExpression *r_, Bound *b_);
-    virtual bool isBoolAtom();
-    virtual std::string name();
-    virtual std::string codeGen();
+    NAlways(BooleanExpression *l, BooleanExpression *r, Bound *b);
+    virtual void print(std::ostream &os, AST *ast);
+    virtual void codeGen(CodeGenerator &c);
 };
 
 class NAnd : public BooleanExpression {
   public:
-    NAnd(BooleanExpression *l_, BooleanExpression *r_);
-    virtual bool isBoolAtom();
-    virtual std::string name();
-    virtual std::string codeGen();
+    BooleanExpression *lhs;
+    BooleanExpression *rhs;
+    NAnd(BooleanExpression *l, BooleanExpression *r);
+    virtual void print(std::ostream &os, AST *ast);
+    virtual void codeGen(CodeGenerator &c);
 };
 
 class NEventually : public BooleanExpression {
   public:
+    BooleanExpression *lhs;
+    BooleanExpression *rhs;
     Bound *b;
-    NEventually(BooleanExpression *l_, BooleanExpression *r_, Bound *b_);
-    virtual bool isBoolAtom();
-    virtual std::string name();
-    virtual std::string codeGen();
+    NEventually(BooleanExpression *l, BooleanExpression *r, Bound *b);
+    virtual void print(std::ostream &os, AST *ast);
+    virtual void codeGen(CodeGenerator &c);
 };
 
 class NPredicate : public BooleanExpression {
   public:
-	std::string variable;
+    AnalogExpression *lhs;
+    std::string variable;
     std::string op;
     double condition;
-    NPredicate(BooleanExpression *l_, BooleanExpression *r_, const std::string op_, double condition_);
-    virtual bool isBoolAtom();
-    virtual std::string name();
-    virtual std::string codeGen();
+    NPredicate(AnalogExpression *l, const std::string op, double condition);
+    void setVariable(AnalogExpression *l);
+    virtual void print(std::ostream &os, AST *ast);
+    virtual void codeGen(CodeGenerator &c);
 };
 
 class NImply : public BooleanExpression {
   public:
+    BooleanExpression *lhs;
+    BooleanExpression *rhs;
     int min_time;
     int max_time;
-    NImply(BooleanExpression *l_, BooleanExpression *r_);
-    virtual bool isBoolAtom();
-    virtual std::string name();
-    virtual std::string codeGen();
+    NImply(BooleanExpression *l, BooleanExpression *r);
+    virtual void print(std::ostream &os, AST *ast);
+    virtual void codeGen(CodeGenerator &c);
 };
 
 class NBoolAtom : public BooleanExpression {
   public:
     std::string variable;
-    NBoolAtom(BooleanExpression *l_, BooleanExpression *r_, const char *variable_);
-    virtual bool isBoolAtom();
-    virtual std::string name();
-    virtual std::string codeGen();
+    NBoolAtom(const char *variable);
+    virtual void print(std::ostream &os, AST *ast);
+    virtual void codeGen(CodeGenerator &c);
 };
 
 class NEvent : public BooleanExpression {
   public:
-    NEvent(BooleanExpression *l_, BooleanExpression *r_);
-    virtual bool isBoolAtom();
-    virtual std::string name();
-    virtual std::string codeGen();
+    BooleanExpression *lhs;
+    BooleanExpression *rhs;
+    NEvent(BooleanExpression *l, BooleanExpression *r);
+    virtual void print(std::ostream &os, AST *ast);
+    virtual void codeGen(CodeGenerator &c);
 };
 
 class NAnalog : public AnalogExpression {
   public:
-	std::string op;
+    std::string op;
     std::string variable;
-    NAnalog(AnalogExpression *l_, AnalogExpression *r_, const char *variable_);
-    virtual bool isBoolAtom();
-    virtual std::string name();
-    virtual std::string codeGen();
-	void setOperator(const std::string op_);
+    NAnalog(const char *variable);
+    void setOperator(const std::string op_);
+    virtual void print(std::ostream &os, AST *ast);
+    virtual void codeGen(CodeGenerator &c);
 };
 
 #endif
