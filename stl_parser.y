@@ -108,7 +108,7 @@ stl_property:
     | '(' stl_property ')' { $$ = $2; printf("create stl_property2\n"); }
     | TKNOT stl_property { printf("create stl_property3\n"); }
 	| TKFELL stl_property { printf("create stl_property4\n"); }
-	| TKROSE stl_property { /*$$ = $2;*/ $$ = new NEvent($2, NULL); printf("create stl_property5 %s\n", $2->name.c_str()); }
+	| TKROSE stl_property { /*$$ = $2;*/ $$ = new NEvent($2, NULL, operator_subtype::rise_t); printf("create stl_property5 %s\n", operator_type_strings[enumIndex($2->type)].c_str()); }
     | stl_property TKAND stl_property { $$ = new NAnd($1, $3); printf("create stl_property6 and\n"); }
     | stl_property TKOR stl_property { printf("create stl_property7\n"); }
     | stl_property TKXOR stl_property { printf("create stl_property8\n"); }

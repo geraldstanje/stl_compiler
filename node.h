@@ -10,6 +10,101 @@
 
 class CodeGenerator;
 
+enum class operator_type {
+    anal_t,
+    pred_t,
+    bool_t,
+    futu_t,
+    past_t,
+    even_t,
+    tpro_t,
+    boolatom_t
+};
+
+const std::string operator_type_strings[] = {
+    "analog_operator",
+    "predicate",
+    "boolean_operator",
+    "future_tmp_operator",
+    "past_tmp_operator",
+    "event",
+    "temp_property",
+    "boolatom_t"
+};
+
+enum class operator_subtype {
+    /* analog operators */
+    subtract_t,
+    add_t,
+    multiply_t,
+    abs_t,
+    /* predicates */
+    small_equal_t,
+    smaller_t,
+    larger_equal_t,
+    larger_t,
+    equal_t,
+    /* boolean operators */
+    not_t,
+    or_t,
+    and_t,
+    imply_t,
+    dual_imply_t, /* TODO: check if correct naming */
+    xor_t,
+    /* future temporal operators */
+    eventually_t,
+    always_t,
+    until_t,
+    /* past temporal operators */
+    once_t,
+    historyically_t,
+    since_t,
+    /* events */
+    rise_t,
+    fall_t,
+    /* template properties */
+    distance_t,
+    none_t
+};
+
+const std::string operator_subtype_strings[] = {
+    /* analog operators */
+    "subtract_t",
+    "add_t",
+    "multiply_t",
+    "abs_t",
+    /* predicates */
+    "small_equal_t",
+    "smaller_t",
+    "larger_equal_t",
+    "larger_t",
+    "equal_t",
+    /* boolean operators */
+    "not_t",
+    "or_t",
+    "and_t",
+    "imply_t",
+    "dual_imply_t", /* TODO: check if correct naming */
+    "xor_t",
+    /* future temporal operators */
+    "eventually_t",
+    "always_t",
+    "until_t",
+    /* past temporal operators */
+    "once_t",
+    "historyically_t",
+    "since_t",
+    /* events */
+    "rise_t",
+    "fall_t",
+    /* template properties */
+    "distance_t",
+    "none_t"
+};
+
+constexpr std::size_t enumIndex(const operator_type value) noexcept;
+constexpr std::size_t subTypeIndex(const operator_subtype value) noexcept;
+
 class Bound {
   public:
     double min;
@@ -20,11 +115,12 @@ class Bound {
 class Node {
   public:
     int nodeId;
-    std::string name;
-    Node(const std::string name_);
+    operator_type type;
+    operator_subtype subtype;
+    Node(operator_type type_, operator_subtype subtype_);
     virtual ~Node();
     std::string id();
-    bool isBoolAtomChild();
+    bool isBoolAtom();
     std::string getChildParams(CodeGenerator &c, Node *lhs, Node *rhs);
     virtual void print(std::ostream &os, AST *ast) = 0;
     virtual void codeGen(CodeGenerator &c) = 0;
@@ -32,14 +128,14 @@ class Node {
 
 class BooleanExpression : public Node {
   public:
-    BooleanExpression(const std::string name);
+    BooleanExpression(operator_type type_, operator_subtype subtype_);
     virtual void print(std::ostream &os, AST *ast) = 0;
     virtual void codeGen(CodeGenerator &c) = 0;
 };
 
 class AnalogExpression : public Node {
   public:
-    AnalogExpression(const std::string name);
+    AnalogExpression(operator_type type_, operator_subtype subtype_);
     virtual void print(std::ostream &os, AST *ast) = 0;
     virtual void codeGen(CodeGenerator &c) = 0;
 };
@@ -106,9 +202,9 @@ class NBoolAtom : public BooleanExpression {
 
 class NEvent : public BooleanExpression {
   public:
-    BooleanExpression *lhs;
+    BooleanExpression *lhs; // TODO: we only need lhs!?
     BooleanExpression *rhs;
-    NEvent(BooleanExpression *l, BooleanExpression *r);
+    NEvent(BooleanExpression *l, BooleanExpression *r, const operator_subtype subtype);
     virtual void print(std::ostream &os, AST *ast);
     virtual void codeGen(CodeGenerator &c);
 };

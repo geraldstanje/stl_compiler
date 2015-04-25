@@ -15,7 +15,17 @@ static std::string doubleToString(double num) {
     return ss.str();
 }
 
-Node::Node(std::string name_): nodeId(count++), name(name_) {}
+constexpr std::size_t enumIndex(const operator_type value) noexcept {
+    static_assert(std::is_enum<operator_type>::value, "Not an enum of type operator_type");
+    return static_cast<std::size_t>(value);
+}
+
+constexpr std::size_t subTypeIndex(const operator_subtype value) noexcept {
+    static_assert(std::is_enum<operator_subtype>::value, "Not an enum of type operator_subtype");
+    return static_cast<std::size_t>(value);
+}
+
+Node::Node(operator_type type_, operator_subtype subtype_): nodeId(count++), type(type_), subtype(subtype_) {}
 
 Node::~Node() {}
 
@@ -23,8 +33,8 @@ std::string Node::id() {
     return intToString(nodeId);
 }
 
-bool Node::isBoolAtomChild() {
-    if (name == "NBoolAtom") {
+bool Node::isBoolAtom() {
+    if (type == operator_type::boolatom_t) {
         return true;
     }
     return false;
@@ -36,7 +46,7 @@ std::string Node::getChildParams(CodeGenerator &c, Node *lhs, Node *rhs) {
     if (lhs) {
         std::string lhs_id;
 
-        if (lhs->isBoolAtomChild()) {
+        if (lhs->isBoolAtom()) {
             Node *lhs_ = c.ast->getNode((static_cast<NBoolAtom*>(lhs))->variable);
             assert(lhs_);
             lhs_id = lhs_->id();
@@ -52,7 +62,7 @@ std::string Node::getChildParams(CodeGenerator &c, Node *lhs, Node *rhs) {
     if (rhs) {
         std::string rhs_id;
 
-        if (rhs->isBoolAtomChild()) {
+        if (rhs->isBoolAtom()) {
             Node *rhs_ = c.ast->getNode((static_cast<NBoolAtom*>(rhs))->variable);
             assert(rhs_);
             rhs_id = rhs_->id();
@@ -68,11 +78,11 @@ std::string Node::getChildParams(CodeGenerator &c, Node *lhs, Node *rhs) {
     return childParams;
 }
 
-BooleanExpression::BooleanExpression(const std::string name): Node(name) {}
+BooleanExpression::BooleanExpression(operator_type type_, operator_subtype subtype_): Node(type_, subtype_) {}
 
-AnalogExpression::AnalogExpression(const std::string name): Node(name) {}
+AnalogExpression::AnalogExpression(operator_type type_, operator_subtype subtype_): Node(type_, subtype_) {}
 
-NAlways::NAlways(BooleanExpression *l, BooleanExpression *r, Bound *b): BooleanExpression("NAlways"), lhs(l), rhs(r), b(b) {}
+NAlways::NAlways(BooleanExpression *l, BooleanExpression *r, Bound *b): BooleanExpression(operator_type::futu_t, operator_subtype::always_t), lhs(l), rhs(r), b(b) {}
 
 void NAlways::print(std::ostream &os, AST *ast) {
     if (lhs) {
@@ -84,7 +94,7 @@ void NAlways::print(std::ostream &os, AST *ast) {
         rhs->print(os, ast);
     }
 
-    os << "\t" + intToString(nodeId) + " [label=\"" + name + "\"];" + "\n";
+    os << "\t" + intToString(nodeId) + " [label=\"" + operator_type_strings[enumIndex(type)] + "\"];" + "\n";
 }
 
 void NAlways::codeGen(CodeGenerator &c) {
@@ -109,7 +119,7 @@ void NAlways::codeGen(CodeGenerator &c) {
     *c.os << "\n";
 }
 
-NAnd::NAnd(BooleanExpression *l, BooleanExpression *r): BooleanExpression("NAnd"), lhs(l), rhs(r) {}
+NAnd::NAnd(BooleanExpression *l, BooleanExpression *r): BooleanExpression(operator_type::anal_t, operator_subtype::and_t), lhs(l), rhs(r) {}
 
 void NAnd::print(std::ostream &os, AST *ast) {
     if (lhs) {
@@ -121,7 +131,7 @@ void NAnd::print(std::ostream &os, AST *ast) {
         rhs->print(os, ast);
     }
 
-    os << "\t" + intToString(nodeId) + " [label=\"" + name + "\"];" + "\n";
+    os << "\t" + intToString(nodeId) + " [label=\"" + operator_type_strings[enumIndex(type)] + "\"];" + "\n";
 }
 
 void NAnd::codeGen(CodeGenerator &c) {
@@ -139,7 +149,7 @@ void NAnd::codeGen(CodeGenerator &c) {
     *c.os << "\n";
 }
 
-NEventually::NEventually(BooleanExpression *l, BooleanExpression *r, Bound *b): BooleanExpression("NEventually"), lhs(l), rhs(r), b(b) {}
+NEventually::NEventually(BooleanExpression *l, BooleanExpression *r, Bound *b): BooleanExpression(operator_type::futu_t, operator_subtype::eventually_t), lhs(l), rhs(r), b(b) {}
 
 void NEventually::print(std::ostream &os, AST *ast) {
     if (lhs) {
@@ -151,7 +161,7 @@ void NEventually::print(std::ostream &os, AST *ast) {
         rhs->print(os, ast);
     }
 
-    os << "\t" + intToString(nodeId) + " [label=\"" + name + "\"];" + "\n";
+    os << "\t" + intToString(nodeId) + " [label=\"" + operator_type_strings[enumIndex(type)] + "\"];" + "\n";
 }
 
 void NEventually::codeGen(CodeGenerator &c) {
@@ -176,7 +186,7 @@ void NEventually::codeGen(CodeGenerator &c) {
     *c.os << "\n";
 }
 
-NPredicate::NPredicate(AnalogExpression *l, const std::string op, double condition): BooleanExpression("NPredicate"), lhs(l), op(op), condition(condition) {}
+NPredicate::NPredicate(AnalogExpression *l, const std::string op, double condition): BooleanExpression(operator_type::pred_t, operator_subtype::smaller_t), lhs(l), op(op), condition(condition) {}
 
 void NPredicate::setVariable(AnalogExpression *l) {
     if (l) {
@@ -190,7 +200,7 @@ void NPredicate::print(std::ostream &os, AST *ast) {
         lhs->print(os, ast);
     }
 
-    os << "\t" + intToString(nodeId) + " [label=\"" + name + "\"];" + "\n";
+    os << "\t" + intToString(nodeId) + " [label=\"" + operator_type_strings[enumIndex(type)] + "\"];" + "\n";
 }
 
 void NPredicate::codeGen(CodeGenerator &c) {
@@ -206,7 +216,7 @@ void NPredicate::codeGen(CodeGenerator &c) {
     *c.os << "\n";
 }
 
-NImply::NImply(BooleanExpression *l, BooleanExpression *r): BooleanExpression("NImply"), lhs(l), rhs(r) {}
+NImply::NImply(BooleanExpression *l, BooleanExpression *r): BooleanExpression(operator_type::bool_t, operator_subtype::imply_t), lhs(l), rhs(r) {}
 
 void NImply::print(std::ostream &os, AST *ast) {
     if (lhs) {
@@ -218,7 +228,7 @@ void NImply::print(std::ostream &os, AST *ast) {
         rhs->print(os, ast);
     }
 
-    os << "\t" + intToString(nodeId) + " [label=\"" + name + "\"];" + "\n";
+    os << "\t" + intToString(nodeId) + " [label=\"" + operator_type_strings[enumIndex(type)] + "\"];" + "\n";
 }
 
 void NImply::codeGen(CodeGenerator &c) {
@@ -236,7 +246,7 @@ void NImply::codeGen(CodeGenerator &c) {
     *c.os << "\n";
 }
 
-NBoolAtom::NBoolAtom(const char *variable): BooleanExpression("NBoolAtom"), variable(variable) {}
+NBoolAtom::NBoolAtom(const char *variable): BooleanExpression(operator_type::boolatom_t, operator_subtype::none_t), variable(variable) {}
 
 void NBoolAtom::print(std::ostream &os, AST *ast) {
     Node *lhs = ast->getNode(variable);
@@ -246,7 +256,7 @@ void NBoolAtom::print(std::ostream &os, AST *ast) {
 
         lhs->print(os, ast);
     }
-    os << "\t" + intToString(nodeId) + " [label=\"" + name + "\"];" + "\n";
+    os << "\t" + intToString(nodeId) + " [label=\"" + operator_type_strings[enumIndex(type)] + "\"];" + "\n";
 }
 
 void NBoolAtom::codeGen(CodeGenerator &c) {
@@ -256,7 +266,7 @@ void NBoolAtom::codeGen(CodeGenerator &c) {
     }
 }
 
-NEvent::NEvent(BooleanExpression *l, BooleanExpression *r): BooleanExpression("NEvent"), lhs(l), rhs(r) {}
+NEvent::NEvent(BooleanExpression *l, BooleanExpression *r, const operator_subtype subtype): BooleanExpression(operator_type::even_t, subtype), lhs(l), rhs(r) {}
 
 void NEvent::print(std::ostream &os, AST *ast) {
     if (lhs) {
@@ -268,11 +278,19 @@ void NEvent::print(std::ostream &os, AST *ast) {
         rhs->print(os, ast);
     }
 
-    os << "\t" + intToString(nodeId) + " [label=\"" + name + "\"];" + "\n";
+    os << "\t" + intToString(nodeId) + " [label=\"" + operator_type_strings[enumIndex(type)] + "\"];" + "\n";
 }
 
 void NEvent::codeGen(CodeGenerator &c) {
+    std::string variable;
+
     if (lhs) {
+        if (lhs->isBoolAtom()) {
+            Node *lhs_ = c.ast->getNode((static_cast<NBoolAtom*>(lhs))->variable);
+            variable = std::string(", \"") + (static_cast<NPredicate*>(lhs_))->variable + std::string("\"");
+            //variable += std::string(", \"") + doubleToString((static_cast<NPredicate*>(lhs_))->condition) + std::string("\"");
+        }
+
         lhs->codeGen(c);
     }
     if (rhs) {
@@ -282,14 +300,14 @@ void NEvent::codeGen(CodeGenerator &c) {
     std::string childParams = getChildParams(c, lhs, rhs);
 
     *c.os << std::string("node *n") + id() + std::string(" = ") + std::string("node_event_new") +
-          std::string("(") + childParams + std::string("rise_t") + std::string(");");
+          std::string("(") + childParams + operator_subtype_strings[subTypeIndex(subtype)] + variable + std::string(");");
     *c.os << "\n";
 }
 
-NAnalog::NAnalog(const char *variable): AnalogExpression("NAnalog"), variable(variable) {}
+NAnalog::NAnalog(const char *variable): AnalogExpression(operator_type::anal_t, operator_subtype::none_t), variable(variable) {}
 
 void NAnalog::print(std::ostream &os, AST *ast) {
-    os << "\t" + intToString(nodeId) + " [label=\"" + name + "\"];" + "\n";
+    os << "\t" + intToString(nodeId) + " [label=\"" + operator_type_strings[enumIndex(type)] + "\"];" + "\n";
 }
 
 void NAnalog::codeGen(CodeGenerator &c) {
