@@ -4,9 +4,7 @@
 #include <iostream>
 #include <fstream>
 
-extern "C" {
-    int yyparse();
-}
+int yyparse();
 int yylex();
 extern FILE *yyin;
 extern AST ast;
@@ -18,13 +16,19 @@ int main() {
 
     ast.generateDotFormat("plot.dot");
 
-    //std::fstream file;
-    //file.open("generated.txt", std::ios::out);
+    std::fstream file;
+    file.open("../sw_monitor/generated/stl_gen.h", std::ios::out);
 
     CodeGenerator generator(&ast);
-    generator.generateCode(&std::cout);
 
-    //file.close();
+    file << "#include \"../node.h\"" << '\n';
+    file << "#include \"../stltree.h\"" << "\n\n";
+
+    file << "void stltree_create(stltree *t) {" << '\n';
+    generator.generateCode(&file);//&std::cout);
+    file << "}";
+
+    file.close();
 
     return 0;
 }

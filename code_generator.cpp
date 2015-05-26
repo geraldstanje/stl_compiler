@@ -1,7 +1,8 @@
 #include "code_generator.h"
 #include <iostream>
 
-CodeGenerator::CodeGenerator(AST *ast_): ast(ast_) {}
+CodeGenerator::CodeGenerator(AST *ast_): ast(ast_), 
+                                         indentNum(0) {}
 
 /*
 node *n1 = node_analog_operator_new(NULL, NULL, abs_t, "x");
@@ -16,7 +17,29 @@ node *n9 = node_boolean_operator_new(n8, n6, and_t);
 t->root = node_temp_operator_new(n9, NULL, always_t, 0, INT_MAX);
 */
 
+void CodeGenerator::indent() {
+    indentNum++;
+}
+
+void CodeGenerator::deindent() {
+    indentNum--;
+ 
+    if (indentNum < 0) {
+        indentNum = 0;
+    }
+}
+
+void CodeGenerator::emitLine(const std::string line) {
+    *os << std::string(indentNum, '\t');
+    *os << line;
+    *os << "\n";
+}
+
 void CodeGenerator::generateCode(std::ostream *os_) {
     os = os_;
+    
+    indent();
     ast->root->codeGen(*this);
+    emitLine(std::string("t->root = n") + ast->root->id() + std::string(";"));
+    deindent();
 }

@@ -3,10 +3,7 @@
 #include "node.h"
 #include "ast.h"
 
-extern "C" {
-    int yyparse();
-}
-
+int yyparse();
 //extern char *yytext;
 //extern int yylineno;
 int yylex(void);

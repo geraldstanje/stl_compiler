@@ -6,7 +6,7 @@
 #include <string>
 #include <sstream>
 #include "code_generator.h"
-#include "AST.h"
+#include "ast.h"
 
 class CodeGenerator;
 
