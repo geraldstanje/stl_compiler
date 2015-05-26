@@ -9,7 +9,7 @@ class AST;
 
 class CodeGenerator {
   public:
-    int indentNum;    
+    int indentNum;
     std::ostream *os;
     AST *ast;
 
