@@ -1,0 +1,4 @@
+<Mapping>
+    <StlAnalogProperty Name="trigger" Port="0"/>
+    <StlAnalogProperty Name="x" Port="1"/>
+</Mapping>

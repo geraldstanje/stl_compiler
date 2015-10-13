@@ -1,12 +1,12 @@
 #ifndef NODE_H
 #define NODE_H
 
+#include "code_generator.h"
+#include "ast.h"
 #include <vector>
 #include <fstream>
 #include <string>
 #include <sstream>
-#include "code_generator.h"
-#include "ast.h"
 
 class CodeGenerator;
 
@@ -54,6 +54,7 @@ enum class operator_subtype {
     /* future temporal operators */
     eventually_t,
     always_t,
+    eventually_always_t,
     until_t,
     /* past temporal operators */
     once_t,
@@ -89,6 +90,7 @@ const std::string operator_subtype_strings[] = {
     /* future temporal operators */
     "eventually_t",
     "always_t",
+    "eventually_always_t",
     "until_t",
     /* past temporal operators */
     "once_t",
@@ -106,14 +108,14 @@ constexpr std::size_t enumIndex(const operator_type value) noexcept;
 constexpr std::size_t subTypeIndex(const operator_subtype value) noexcept;
 
 class Bound {
-  public:
+public:
     double min;
     double max;
     Bound(double min_, double max_): min(min_), max(max_) {}
 };
 
 class Node {
-  public:
+public:
     int nodeId;
     operator_type type;
     operator_subtype subtype;
@@ -122,55 +124,74 @@ class Node {
     std::string id();
     bool isBoolAtom();
     std::string getChildParams(CodeGenerator &c, Node *lhs, Node *rhs);
+    void optimizeFutureOp(AST *ast, Node *curr);
     virtual void print(std::ostream &os, AST *ast) = 0;
+    virtual void optimize(AST *ast) = 0;
     virtual void codeGen(CodeGenerator &c) = 0;
 };
 
 class BooleanExpression : public Node {
-  public:
+public:
     BooleanExpression(operator_type type_, operator_subtype subtype_);
     virtual void print(std::ostream &os, AST *ast) = 0;
+    virtual void optimize(AST *ast) = 0;
     virtual void codeGen(CodeGenerator &c) = 0;
 };
 
 class AnalogExpression : public Node {
-  public:
+public:
     AnalogExpression(operator_type type_, operator_subtype subtype_);
     virtual void print(std::ostream &os, AST *ast) = 0;
+    virtual void optimize(AST *ast) = 0;
     virtual void codeGen(CodeGenerator &c) = 0;
 };
 
 class NAlways : public BooleanExpression {
-  public:
+public:
     BooleanExpression *lhs;
     BooleanExpression *rhs;
     Bound *b;
     NAlways(BooleanExpression *l, BooleanExpression *r, Bound *b);
     virtual void print(std::ostream &os, AST *ast);
+    virtual void optimize(AST *ast);
     virtual void codeGen(CodeGenerator &c);
 };
 
 class NAnd : public BooleanExpression {
-  public:
+public:
     BooleanExpression *lhs;
     BooleanExpression *rhs;
     NAnd(BooleanExpression *l, BooleanExpression *r);
     virtual void print(std::ostream &os, AST *ast);
+    virtual void optimize(AST *ast);
     virtual void codeGen(CodeGenerator &c);
 };
 
 class NEventually : public BooleanExpression {
-  public:
+public:
     BooleanExpression *lhs;
     BooleanExpression *rhs;
     Bound *b;
     NEventually(BooleanExpression *l, BooleanExpression *r, Bound *b);
     virtual void print(std::ostream &os, AST *ast);
+    virtual void optimize(AST *ast);
+    virtual void codeGen(CodeGenerator &c);
+};
+
+class NEventuallyAlways : public BooleanExpression {
+public:
+    BooleanExpression *lhs;
+    BooleanExpression *rhs;
+    Bound *b1;
+    Bound *b2;
+    NEventuallyAlways(BooleanExpression *l, BooleanExpression *r, Bound *b1, Bound *b2);
+    virtual void print(std::ostream &os, AST *ast);
+    virtual void optimize(AST *ast);
     virtual void codeGen(CodeGenerator &c);
 };
 
 class NPredicate : public BooleanExpression {
-  public:
+public:
     AnalogExpression *lhs;
     std::string variable;
     std::string op;
@@ -178,44 +199,49 @@ class NPredicate : public BooleanExpression {
     NPredicate(AnalogExpression *l, const std::string op, double condition);
     void setVariable(AnalogExpression *l);
     virtual void print(std::ostream &os, AST *ast);
+    virtual void optimize(AST *ast);
     virtual void codeGen(CodeGenerator &c);
 };
 
 class NImply : public BooleanExpression {
-  public:
+public:
     BooleanExpression *lhs;
     BooleanExpression *rhs;
     int min_time;
     int max_time;
     NImply(BooleanExpression *l, BooleanExpression *r);
     virtual void print(std::ostream &os, AST *ast);
+    virtual void optimize(AST *ast);
     virtual void codeGen(CodeGenerator &c);
 };
 
 class NBoolAtom : public BooleanExpression {
-  public:
+public:
     std::string variable;
     NBoolAtom(const char *variable);
     virtual void print(std::ostream &os, AST *ast);
+    virtual void optimize(AST *ast);
     virtual void codeGen(CodeGenerator &c);
 };
 
 class NEvent : public BooleanExpression {
-  public:
+public:
     BooleanExpression *lhs; // TODO: we only need lhs!?
     BooleanExpression *rhs;
     NEvent(BooleanExpression *l, BooleanExpression *r, const operator_subtype subtype);
     virtual void print(std::ostream &os, AST *ast);
+    virtual void optimize(AST *ast);
     virtual void codeGen(CodeGenerator &c);
 };
 
 class NAnalog : public AnalogExpression {
-  public:
+public:
     std::string op;
     std::string variable;
     NAnalog(const char *variable);
     void setOperator(const std::string op_);
     virtual void print(std::ostream &os, AST *ast);
+    virtual void optimize(AST *ast);
     virtual void codeGen(CodeGenerator &c);
 };
 

@@ -2,31 +2,39 @@ CC = g++
 YACC = yacc
 LEX = lex
 CFLAGS = -g -Wall -std=c++11
-LDFLAGS = -ll
 DFLAGS = -DDEBUG
 YACCFLAGS = -dv
-#LECFLAGS = -l
-#LIBDIR = "C:\Program Files\GnuWin32\lib"
-#LIBS = -lfl -ly
-SRC = node.cpp ast.cpp code_generator.cpp y.tab.cpp lex.yy.cpp main.cpp
-OBJ = node.o ast.o code_generator.o y.tab.o lex.yy.o main.o
-TARGET = main
+LECFLAGS = -l
+INCDIR = ./include
+INCDIR_EXT = ./ext
+SRCDIR = src
+SRCDIR_EXT = ext
+GENDIR = generated
+LIBS = -ll -ly 
+SRC = util.cpp tinyxml2.cpp bool_property.cpp node.cpp ast.cpp code_generator.cpp y.tab.cpp lex.yy.cpp stl_comp.cpp
+OBJ = util.o tinyxml2.o bool_property.o node.o ast.o code_generator.o y.tab.o lex.yy.o stl_comp.o
+TARGET = stl_comp 
 
 all: $(TARGET) $(OBJ)
 
 $(TARGET): $(OBJ)
-	$(CC) $(CFLAGS) $(DFLAGS) $(LDFLAGS) -o $@ $(OBJ) 
-	#-L$(LIBDIR) $(LIBS)
+	$(CC) $(CFLAGS) $(DFLAGS) -o $@ $(OBJ) $(LIBS)
 
-.cpp.o:
-	$(CC) $(CFLAGS) $(DFLAGS) -c $<
+y.tab.cpp: $(INCDIR)/stl_parser.y
+	$(YACC) $(YACCFLAGS) -o y.tab.cpp $(INCDIR)/stl_parser.y
 
-y.tab.cpp: stl_parser.y
-	$(YACC) -dv -o y.tab.cpp stl_parser.y
+lex.yy.cpp: $(INCDIR)/stl_parser.l
+	$(LEX) $(LECFLAGS) -o lex.yy.cpp $(INCDIR)/stl_parser.l
 
-lex.yy.cpp: stl_parser.l
-	$(LEX) -l -o lex.yy.cpp stl_parser.l
+%.o: $(SRCDIR)/%.cpp
+	$(CC) $(CFLAGS) $(DFLAGS) -I$(INCDIR) -I$(INCDIR_EXT) -c $<
+
+%.o: $(SRCDIR_EXT)/%.cpp
+	$(CC) $(CFLAGS) $(DFLAGS) -I$(INCDIR_EXT) -c $<
+
+%.o: %.cpp
+	$(CC) $(CFLAGS) $(DFLAGS) -I$(INCDIR) -c $<
 
 clean:
-	rm -f y.tab.* lex.yy.* y.output $(OBJ) $(TARGET)
+	rm -f y.tab.* lex.yy.* y.output plot.dot $(GENDIR)/generated_stl.h $(OBJ) $(TARGET)
 

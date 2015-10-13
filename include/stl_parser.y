@@ -4,19 +4,12 @@
 #include "ast.h"
 
 int yyparse();
-//extern char *yytext;
-//extern int yylineno;
 int yylex(void);
 void yyerror(const char *msg);	
 AST ast; /* the top level root node of our final AST */
 %}
 
 %union {
-    //class Bound *bnd;
-	//class StlItem *node;
-	//class BooleanExpression *boolean_exp;
-	//class AnalogExpression *analog_exp;
-	
     Bound *bnd;
     BooleanExpression *boolean_exp;
     AnalogExpression *analog_exp;
@@ -143,10 +136,10 @@ boolean_atom:
     ;
 
 boolean_expression:
-    analog_expression TKLEQ TKREAL { printf("create boolean_expression1 TKLEQ: %s %f\n", $1, $3); }
+    analog_expression TKLEQ TKREAL { $$ = new NPredicate($1, "small_equal_t", $3); ((NPredicate*)$$)->setVariable($1); printf("create boolean_expression1 TKLEQ: %s %f\n", $1, $3); }
     | analog_expression TKLESS TKREAL { $$ = new NPredicate($1, "smaller_t", $3); ((NPredicate*)$$)->setVariable($1); printf("create boolean_expression2 TKLESS: %f\n", $3); }
-    | analog_expression TKGREATER TKREAL { printf("create boolean_expression3 TKGREATER: %f\n", $3); }
-    | analog_expression TKGEQ TKREAL { printf("create boolean_expression4 TKGEQ: %f\n", $3); }
+    | analog_expression TKGREATER TKREAL { $$ = new NPredicate($1, "larger_t", $3); ((NPredicate*)$$)->setVariable($1); printf("create boolean_expression3 TKGREATER: %f\n", $3); }
+    | analog_expression TKGEQ TKREAL { $$ = new NPredicate($1, "larger_equal_t", $3); ((NPredicate*)$$)->setVariable($1); printf("create boolean_expression4 TKGEQ: %f\n", $3); }
     | analog_expression TKEQ TKREAL { $$ = new NPredicate($1, "equal_t", $3); ((NPredicate*)$$)->setVariable($1); printf("create boolean_expression5 TKEQ: %f\n", $3); }
     | TKDISTANCE '(' analog_expression ',' analog_expression ',' TKREAL ')' { printf("create boolean_expression6\n"); }
     | TKDISTANCE '(' analog_expression ',' analog_expression ',' TKREAL ',' { printf("create boolean_expression7\n"); }
@@ -184,9 +177,8 @@ range:
 %%
 
 void yyerror(const char *msg) {
-	extern int yylineno;  // defined and maintained in lex
-	//extern char *yytext;  // defined and maintained in lex
-	extern char yytext[];   /* Correct for traditional Lex */
+	extern int yylineno; // defined and maintained in lex
+	extern char yytext[]; // Correct for traditional Lex
 	
 	fprintf(stderr, "ERROR: %s at symbol '%s' on line %d\n", msg, yytext, yylineno);
 	exit(1);

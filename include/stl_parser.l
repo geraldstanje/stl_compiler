@@ -106,7 +106,7 @@ real            {integer}|{integer}("."{number})?|{exponant}?
 <next_occurence>[ \n\t\[]		;
 <next_occurence>"]"				{	BEGIN 0; }
 <next_occurence>.				yyerror ("Invalid character");
-[ \n\t\s\r]*                        ;
+[ \n\t\s\r]*                    ;
 [:;(){}\[\],]                   { return *yytext; }
 
 .                               { yyerror ("Invalid character"); }
