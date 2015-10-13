@@ -1,8 +1,0 @@
-vprop example {
-	define b:x_smaller6 := abs(a:x) < 1.0;
-	define b:x_smaller1 := abs(a:x) < 0.2;
-	define b:trigger_rise := a:trigger == 1.0;
-	
-	first assert:
-		always (b:x_smaller6 and (rise(b:trigger_rise) -> eventually [0:1313] always [0:358] (b:x_smaller1)));
-}
